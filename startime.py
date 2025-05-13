@@ -7,9 +7,9 @@ def add(a: int, b: int) -> int:
 def sub(a: int, b: int) -> int:
     return a-b
 def mult(a: int, b: int) -> int:
-    return int(a*b)
+    return round(a*b)
 def div(a: int, b: int) -> int:
-    return int(a/b)
+    return round(a/b)
 
 
 def is_leap_year(year: int) -> bool:
@@ -30,12 +30,12 @@ def tokenize_startime(inp: str) -> list[str]:
     grouping_depth = 0
     for char in inp:
         if char.isnumeric(): # number
-            if last == "OPERATOR":
+            if last == "OPERATOR" or last == "GROUPING":
                 last = ""
             last += str(char)
         elif char in math_symbols: # operator
-            if last and last != "OPERATOR":
-                if last != "": expression.append(last)
+            if last and last != "OPERATOR" or last == "GROUPING":
+                if last != "" and last != "GROUPING": expression.append(last)
                 if char == "/" and grouping_depth == 0:
                     tokens.append(expression)
                     last = ""
@@ -53,18 +53,19 @@ def tokenize_startime(inp: str) -> list[str]:
             if last != "OPERATOR":
                 expression.append(last)
             expression.append(char)
-            last = ""
+            last = "GROUPING"
         else: # unknown
             raise ValueError(f"Unknown value '{char}' passed into date '{inp}'.")
         print(char,expression)
     if last != "": 
         expression.append(last)
-
-    if grouping_depth != 0:
-        raise ValueError(f"Grouping symbol(s) missing in {exp[i]}")
-    
     tokens.append(expression)
 
+    if grouping_depth != 0: # missing or too many grouping symbols
+        raise ValueError(f"Grouping symbol(s) in date {inp} are invalid.")
+    
+    if len(tokens) != 3: # missing or misplaced '/'s
+        raise ValueError(f"Date {inp} is malformed, are you grouping division?")
     return tokens
 
 def eval_tree_exp(exp: str) -> int:
@@ -98,4 +99,4 @@ if __name__ == "__main__":
     try:
         print(parse_time(sys.argv[1]))
     except IndexError:
-        print(parse_time("*+3*(3+3*5)-12/*/*"))
+        print(parse_time("*+3*(3+3/5)-12/*/*"))
