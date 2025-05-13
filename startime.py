@@ -92,7 +92,7 @@ def eval_tokenized_startime(tokens: list[str]) -> str:
             val = simple_eval(exp)
         except ZeroDivisionError:
             raise ZeroDivisionError(f"Attempted to divide by zero when computing {component_names[i]} {exp}")
-        date[i] = val
+        date[i] = round(val)
     
     if date[0] > 12: # month-year wrapping
         date[2] += date[0]//12
@@ -106,6 +106,12 @@ def eval_tokenized_startime(tokens: list[str]) -> str:
             date[2] += 1
             date[0] -= 12
         cur_days = get_days_in_month(date[0],date[2])
+
+    # TODO: implement
+    while date[1] < cur_days: # day-month wrapping backwards
+        date[0] = date[0]
+        #date[1] +
+        break
 
     for i, val in enumerate(date):
         s_val = str(val)
